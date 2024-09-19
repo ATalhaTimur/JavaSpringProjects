@@ -1,10 +1,13 @@
 package com.talha.springboot.demo_rest_api.survey;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
@@ -30,7 +33,6 @@ public class SurveyService {
 	}
 
 	public List<Survey> retrieveAllSurveys() {
-		// TODO Auto-generated method stub
 		return surveys;
 	}
 
@@ -47,7 +49,6 @@ public class SurveyService {
 	}
 
 	public List<Question> retriveAllSurveyQuestions(String surveyId) {
-		// TODO Auto-generated method stub
 		Survey survey = SurveyById(surveyId);
 		if (survey == null)
 			return null;
@@ -70,9 +71,54 @@ public class SurveyService {
 		return optionalQuestion.get();
 	}
 
-	public void AddNewSurveyQuestion(String surveyId, Question question) {
+	public String AddNewSurveyQuestion(String surveyId, Question question) {
 		List<Question> questions = retriveAllSurveyQuestions(surveyId);
+		question.setId(generateRandomId());
 		questions.add(question);
+		return question.getId();
 		
 	}
+
+	private String generateRandomId() {
+		SecureRandom secureRandom = new SecureRandom();
+		String randomId =  new BigInteger(32,secureRandom).toString();
+		return randomId;
+	}
+	
+	public String deleteSurveyQuestion(String surveyId, String questionId) {
+		
+		List<Question> surveyQuestions = retriveAllSurveyQuestions(surveyId);
+		
+		if (surveyQuestions == null)
+			return null;
+
+		Predicate<? super Question> predicate = q -> q.getId().equalsIgnoreCase(questionId);
+		boolean removed = surveyQuestions.removeIf(predicate);
+		
+		if(!removed) return null; 
+
+		return  questionId ;
+	}
+
+	public void updateSurveyQuestion(String surveyId, String questionId, Question question) {
+		
+		question.setId(questionId);
+		List<Question> questions = retriveAllSurveyQuestions(surveyId);
+		questions.removeIf( q -> q.getId().equalsIgnoreCase(questionId));
+		questions.add(question);
+	}
+
+	
 }
+
+
+
+
+
+
+
+
+
+
+
+
